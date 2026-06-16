@@ -1,580 +1,758 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Raskbind X — Invoice Mail Generator</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raskbind X — Invoice Mail Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  :root {
-    --orange: #FF6B00;
-    --orange-dim: #FF6B0022;
-    --orange-border: #FF6B0055;
-    --black: #0A0A0A;
-    --card: #141414;
-    --surface: #1C1C1C;
-    --border: #2A2A2A;
-    --text: #F0F0F0;
-    --muted: #888;
-    --green: #22C55E;
-    --green-dim: #22C55E22;
-    --red: #EF4444;
-    --red-dim: #EF444422;
-  }
+    :root {
+      --orange: #FF6B00;
+      --orange-dim: #FF6B0022;
+      --orange-border: #FF6B0055;
+      --black: #0A0A0A;
+      --card: #141414;
+      --surface: #1C1C1C;
+      --border: #2A2A2A;
+      --text: #F0F0F0;
+      --muted: #888;
+      --green: #22C55E;
+      --green-dim: #22C55E22;
+      --red: #EF4444;
+      --red-dim: #EF444422;
+    }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--black);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px 80px;
-  }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 80px;
+    }
 
-  /* ── Header ── */
-  .header {
-    width: 100%;
-    max-width: 780px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 40px;
-  }
-  .logo-mark {
-    width: 44px; height: 44px;
-    background: var(--orange);
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700; font-size: 15px; color: #fff;
-    flex-shrink: 0;
-  }
-  .header-text h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 20px; font-weight: 700; letter-spacing: -0.3px;
-  }
-  .header-text h1 span { color: var(--orange); }
-  .header-text p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    /* ── Header ── */
+    .header {
+      width: 100%;
+      max-width: 780px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
 
-  /* ── Card ── */
-  .card {
-    width: 100%;
-    max-width: 780px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 24px;
-  }
-  .card-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px; font-weight: 600;
-    letter-spacing: 1.2px; text-transform: uppercase;
-    color: var(--orange);
-    margin-bottom: 20px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card-title::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
+    .logo-mark {
+      width: 44px;
+      height: 44px;
+      background: var(--orange);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: #fff;
+      flex-shrink: 0;
+    }
 
-  /* ── Invoice Type Toggle ── */
-  .type-toggle {
-    display: flex; gap: 12px; margin-bottom: 28px;
-  }
-  .type-btn {
-    flex: 1; padding: 14px 20px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all .2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .type-btn.due.active {
-    background: var(--red-dim);
-    border-color: var(--red);
-    color: var(--red);
-  }
-  .type-btn.paid.active {
-    background: var(--green-dim);
-    border-color: var(--green);
-    color: var(--green);
-  }
-  .type-btn:hover:not(.active) {
-    border-color: #444; color: var(--text);
-  }
+    .header-text h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
 
-  /* ── Form Fields ── */
-  .field-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field.full { grid-column: 1 / -1; }
-  label {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: .8px; text-transform: uppercase;
-    color: var(--muted);
-  }
-  input, textarea, select {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color .2s;
-    width: 100%;
-  }
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--orange);
-  }
-  textarea { resize: vertical; min-height: 80px; }
-  select option { background: #1C1C1C; }
+    .header-text h1 span {
+      color: var(--orange);
+    }
 
-  /* ── PDF Upload ── */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    position: relative;
-    margin-bottom: 16px;
-  }
-  .upload-zone:hover, .upload-zone.dragover {
-    border-color: var(--orange);
-    background: var(--orange-dim);
-  }
-  .upload-zone input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    width: 100%; height: 100%;
-  }
-  .upload-icon { font-size: 32px; margin-bottom: 8px; }
-  .upload-zone p { color: var(--muted); font-size: 13px; }
-  .upload-zone strong { color: var(--orange); }
-  .file-chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--orange-dim);
-    border: 1px solid var(--orange-border);
-    color: var(--orange);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px; font-weight: 500;
-    margin-top: 8px;
-  }
-  .file-chip .remove {
-    cursor: pointer; opacity: .7;
-  }
-  .file-chip .remove:hover { opacity: 1; }
+    .header-text p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
 
-  /* ── Generate Button ── */
-  .generate-btn {
-    width: 100%; padding: 16px;
-    background: var(--orange);
-    color: #fff;
-    border: none; border-radius: 10px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px; font-weight: 700;
-    letter-spacing: .3px;
-    cursor: pointer;
-    transition: opacity .2s, transform .1s;
-    margin-top: 8px;
-  }
-  .generate-btn:hover { opacity: .9; }
-  .generate-btn:active { transform: scale(.99); }
-  .generate-btn:disabled { opacity: .4; cursor: not-allowed; }
+    /* ── Card ── */
+    .card {
+      width: 100%;
+      max-width: 780px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
 
-  /* ── Output Section ── */
-  .output-card {
-    width: 100%;
-    max-width: 780px;
-    display: none;
-  }
-  .output-card.visible { display: block; }
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-  .tabs {
-    display: flex; gap: 4px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px 12px 0 0;
-    padding: 8px 8px 0;
-    border-bottom: none;
-  }
-  .tab {
-    padding: 8px 18px;
-    border-radius: 8px 8px 0 0;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; color: var(--muted);
-    border: 1px solid transparent;
-    border-bottom: none;
-    transition: all .15s;
-  }
-  .tab.active {
-    background: var(--surface);
-    color: var(--text);
-    border-color: var(--border);
-    border-bottom-color: var(--surface);
-  }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
+    /* ── Invoice Type Toggle ── */
+    .type-toggle {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
 
-  .preview-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    padding: 32px;
-    display: flex; justify-content: center;
-  }
-  .code-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    position: relative;
-  }
-  .code-wrap pre {
-    padding: 24px;
-    font-size: 12px; line-height: 1.7;
-    color: #ccc;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 480px;
-    overflow-y: auto;
-  }
-  .copy-btn {
-    position: absolute; top: 12px; right: 12px;
-    background: var(--orange);
-    color: #fff;
-    border: none; border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 12px; font-weight: 600;
-    cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif;
-    transition: opacity .2s;
-  }
-  .copy-btn:hover { opacity: .85; }
+    .type-btn {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
-  /* ── Email Preview ── */
-  .email-outer {
-    background: #f4f4f4;
-    padding: 32px 20px;
-    width: 100%;
-    border-radius: 8px;
-  }
+    .type-btn.due.active {
+      background: var(--red-dim);
+      border-color: var(--red);
+      color: var(--red);
+    }
 
-  /* ── Note ── */
-  .note {
-    width: 100%; max-width: 780px;
-    background: var(--orange-dim);
-    border: 1px solid var(--orange-border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 12px; color: var(--muted);
-    display: flex; gap: 10px; align-items: flex-start;
-    margin-top: 16px;
-  }
-  .note span:first-child { color: var(--orange); font-size: 14px; }
+    .type-btn.paid.active {
+      background: var(--green-dim);
+      border-color: var(--green);
+      color: var(--green);
+    }
 
-  @media (max-width: 600px) {
-    .field-grid { grid-template-columns: 1fr; }
-    .type-toggle { flex-direction: column; }
-    .card { padding: 20px; }
-  }
-</style>
+    .type-btn:hover:not(.active) {
+      border-color: #444;
+      color: var(--text);
+    }
+
+    /* ── Form Fields ── */
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input,
+    textarea,
+    select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--orange);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    select option {
+      background: #1C1C1C;
+    }
+
+    /* ── PDF Upload ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .upload-zone p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .upload-zone strong {
+      color: var(--orange);
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--orange-dim);
+      border: 1px solid var(--orange-border);
+      color: var(--orange);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    .file-chip .remove {
+      cursor: pointer;
+      opacity: .7;
+    }
+
+    .file-chip .remove:hover {
+      opacity: 1;
+    }
+
+    /* ── Generate Button ── */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      margin-top: 8px;
+    }
+
+    .generate-btn:hover {
+      opacity: .9;
+    }
+
+    .generate-btn:active {
+      transform: scale(.99);
+    }
+
+    .generate-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    /* ── Output Section ── */
+    .output-card {
+      width: 100%;
+      max-width: 780px;
+      display: none;
+    }
+
+    .output-card.visible {
+      display: block;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px 12px 0 0;
+      padding: 8px 8px 0;
+      border-bottom: none;
+    }
+
+    .tab {
+      padding: 8px 18px;
+      border-radius: 8px 8px 0 0;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-bottom: none;
+      transition: all .15s;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+      border-bottom-color: var(--surface);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .preview-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      padding: 32px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .code-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      position: relative;
+    }
+
+    .code-wrap pre {
+      padding: 24px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #ccc;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: opacity .2s;
+    }
+
+    .copy-btn:hover {
+      opacity: .85;
+    }
+
+    /* ── Email Preview ── */
+    .email-outer {
+      background: #f4f4f4;
+      padding: 32px 20px;
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* ── Note ── */
+    .note {
+      width: 100%;
+      max-width: 780px;
+      background: var(--orange-dim);
+      border: 1px solid var(--orange-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 16px;
+    }
+
+    .note span:first-child {
+      color: var(--orange);
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .type-toggle {
+        flex-direction: column;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="header">
-  <div class="logo-mark">RX</div>
-  <div class="header-text">
-    <h1>Raskbind <span>X</span></h1>
-    <p>Invoice Email Template Generator</p>
+  <div class="header">
+    <div class="logo-mark">RX</div>
+    <div class="header-text">
+      <h1>Raskbind <span>X</span></h1>
+      <p>Invoice Email Template Generator</p>
+    </div>
   </div>
-</div>
 
-<!-- Step 1: Invoice Type -->
-<div class="card">
-  <div class="card-title">01 — Invoice Type</div>
-  <div class="type-toggle">
-    <button class="type-btn due active" onclick="setType('due')">
-      🔴 &nbsp;Due Invoice
+  <!-- Step 1: Invoice Type -->
+  <div class="card">
+    <div class="card-title">01 — Invoice Type</div>
+    <div class="type-toggle">
+      <button class="type-btn due active" onclick="setType('due')">
+        🔴 &nbsp;Due Invoice
+      </button>
+      <button class="type-btn paid" onclick="setType('paid')">
+        🟢 &nbsp;Paid Confirmation
+      </button>
+    </div>
+
+    <!-- Step 2: Client Details -->
+    <div class="card-title">02 — Client Details</div>
+    <div class="field-grid">
+      <div class="field">
+        <label>Client Name</label>
+        <input type="text" id="clientName" placeholder="e.g. Arjun Sharma" />
+      </div>
+      <div class="field">
+        <label>Client Email</label>
+        <input type="text" id="clientEmail" placeholder="arjun@company.com" />
+      </div>
+      <div class="field">
+        <label>Company / Business Name</label>
+        <input type="text" id="clientCompany" placeholder="e.g. Arjun Pvt. Ltd." />
+      </div>
+      <div class="field">
+        <label>Invoice Number</label>
+        <input type="text" id="invoiceNum" placeholder="e.g. RX-2026-047" />
+      </div>
+      <div class="field">
+        <label>Invoice Amount (₹)</label>
+        <input type="text" id="invoiceAmount" placeholder="e.g. 35,000" />
+      </div>
+      <div class="field">
+        <label id="dueDateLabel">Due Date</label>
+        <input type="text" id="dueDate" placeholder="e.g. 20 June 2026" />
+      </div>
+      <div class="field">
+        <label>Project / Service</label>
+        <input type="text" id="projectName" placeholder="e.g. Website Design & Development" />
+      </div>
+      <div class="field">
+        <label>Sender</label>
+        <div style="background:var(--surface);border:1px solid var(--orange-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">👤</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text);">Rahul Sharma</div>
+            <div style="font-size:11px;color:var(--orange);letter-spacing:.5px;">CEO &middot; Raskbind X</div>
+          </div>
+        </div>
+        <input type="hidden" id="senderName" value="Rahul Sharma" />
+      </div>
+      <div class="field full">
+        <label>Additional Note</label>
+        <textarea id="additionalNote" placeholder="Default note auto-fills based on invoice type. Edit freely..."></textarea>
+      </div>
+    </div>
+
+    <!-- Step 3: PDF Upload -->
+    <div class="card-title">03 — Attach Invoice PDF</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="pdfFile" accept=".pdf" onchange="handleFile(this)" />
+      <div class="upload-icon">📎</div>
+      <p><strong>Click to attach</strong> or drag & drop your invoice PDF</p>
+      <p style="margin-top:4px;font-size:11px;">PDF only · Attached as reference note in template</p>
+      <div id="fileChip" style="display:none;" class="file-chip">
+        <span id="fileName"></span>
+        <span class="remove" onclick="removeFile(event)">✕</span>
+      </div>
+    </div>
+
+    <button class="generate-btn" onclick="generateTemplate()">
+      ⚡ Generate Email Template
     </button>
-    <button class="type-btn paid" onclick="setType('paid')">
-      🟢 &nbsp;Paid Confirmation
-    </button>
   </div>
 
-  <!-- Step 2: Client Details -->
-  <div class="card-title">02 — Client Details</div>
-  <div class="field-grid">
-    <div class="field">
-      <label>Client Name</label>
-      <input type="text" id="clientName" placeholder="e.g. Arjun Sharma" />
+  <!-- Output -->
+  <div class="output-card" id="outputCard">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('preview', this)">Preview</div>
+      <div class="tab" onclick="switchTab('code', this)">Copy HTML Code</div>
     </div>
-    <div class="field">
-      <label>Client Email</label>
-      <input type="text" id="clientEmail" placeholder="arjun@company.com" />
+
+    <div class="tab-content active" id="previewTab">
+      <div class="preview-wrap">
+        <div class="email-outer" id="emailPreview"></div>
+      </div>
     </div>
-    <div class="field">
-      <label>Company / Business Name</label>
-      <input type="text" id="clientCompany" placeholder="e.g. Arjun Pvt. Ltd." />
-    </div>
-    <div class="field">
-      <label>Invoice Number</label>
-      <input type="text" id="invoiceNum" placeholder="e.g. RX-2026-047" />
-    </div>
-    <div class="field">
-      <label>Invoice Amount (₹)</label>
-      <input type="text" id="invoiceAmount" placeholder="e.g. 35,000" />
-    </div>
-    <div class="field">
-      <label id="dueDateLabel">Due Date</label>
-      <input type="text" id="dueDate" placeholder="e.g. 20 June 2026" />
-    </div>
-    <div class="field">
-      <label>Project / Service</label>
-      <input type="text" id="projectName" placeholder="e.g. Website Design & Development" />
-    </div>
-    <div class="field">
-      <label>Your Name (Sender)</label>
-      <input type="text" id="senderName" placeholder="e.g. Rahul" />
-    </div>
-    <div class="field full">
-      <label>Additional Note (optional)</label>
-      <textarea id="additionalNote" placeholder="Any extra message to include..."></textarea>
+
+    <div class="tab-content" id="codeTab">
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        <pre id="codeOutput"></pre>
+      </div>
     </div>
   </div>
 
-  <!-- Step 3: PDF Upload -->
-  <div class="card-title">03 — Attach Invoice PDF</div>
-  <div class="upload-zone" id="uploadZone">
-    <input type="file" id="pdfFile" accept=".pdf" onchange="handleFile(this)" />
-    <div class="upload-icon">📎</div>
-    <p><strong>Click to attach</strong> or drag & drop your invoice PDF</p>
-    <p style="margin-top:4px;font-size:11px;">PDF only · Attached as reference note in template</p>
-    <div id="fileChip" style="display:none;" class="file-chip">
-      <span id="fileName"></span>
-      <span class="remove" onclick="removeFile(event)">✕</span>
-    </div>
+  <div class="note">
+    <span>ℹ️</span>
+    <span>Paste the copied HTML code directly into Gmail's <strong>Insert HTML</strong> feature (or use a browser
+      extension like <strong>YAMM</strong> / <strong>Gmelius</strong>). Attach the PDF separately before sending.</span>
   </div>
 
-  <button class="generate-btn" onclick="generateTemplate()">
-    ⚡ Generate Email Template
-  </button>
-</div>
+  <script>
+    let currentType = 'due';
+    let attachedFile = null;
+    let pdfObjectURL = null;
+    let pdfBase64 = null;
 
-<!-- Output -->
-<div class="output-card" id="outputCard">
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('preview', this)">Preview</div>
-    <div class="tab" onclick="switchTab('code', this)">Copy HTML Code</div>
-  </div>
+    const defaultNotes = {
+      due:  'Please ensure payment is processed by the due date to avoid any delays in project continuity. Bank transfer and UPI are both accepted. Feel free to reach out if you need an alternative arrangement.',
+      paid: 'This invoice has been marked as fully settled. Please retain this confirmation for your financial records. It has been a pleasure working with you — we look forward to our next engagement.'
+    };
 
-  <div class="tab-content active" id="previewTab">
-    <div class="preview-wrap">
-      <div class="email-outer" id="emailPreview"></div>
-    </div>
-  </div>
+    function setType(type) {
+      const ta = document.getElementById('additionalNote');
+      // Only auto-swap if the current content matches a default (user hasn't customised it)
+      const isDefault = ta.value === '' || Object.values(defaultNotes).includes(ta.value.trim());
+      currentType = type;
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.type-btn.' + type).classList.add('active');
+      document.getElementById('dueDateLabel').textContent = type === 'paid' ? 'Payment Date' : 'Due Date';
+      document.getElementById('dueDate').placeholder = type === 'paid' ? 'e.g. 10 June 2026' : 'e.g. 20 June 2026';
+      if (isDefault) ta.value = defaultNotes[type];
+    }
 
-  <div class="tab-content" id="codeTab">
-    <div class="code-wrap">
-      <button class="copy-btn" onclick="copyCode()">Copy Code</button>
-      <pre id="codeOutput"></pre>
-    </div>
-  </div>
-</div>
+    // Set initial default note on load
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('additionalNote').value = defaultNotes['due'];
+    });
 
-<div class="note">
-  <span>ℹ️</span>
-  <span>Paste the copied HTML code directly into Gmail's <strong>Insert HTML</strong> feature (or use a browser extension like <strong>YAMM</strong> / <strong>Gmelius</strong>). Attach the PDF separately before sending.</span>
-</div>
+    function handleFile(input) {
+      if (input.files && input.files[0]) {
+        // Revoke old URL if any
+        if (pdfObjectURL) { URL.revokeObjectURL(pdfObjectURL); pdfObjectURL = null; }
+        attachedFile = input.files[0];
+        pdfObjectURL = URL.createObjectURL(attachedFile);
+        document.getElementById('fileName').textContent = attachedFile.name;
+        document.getElementById('fileChip').style.display = 'inline-flex';
+        // Read as base64 for embedding in email HTML
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          pdfBase64 = e.target.result; // full data:application/pdf;base64,... string
+        };
+        reader.readAsDataURL(attachedFile);
+      }
+    }
 
-<script>
-  let currentType = 'due';
-  let attachedFile = null;
-  let pdfObjectURL = null;
-  let pdfBase64 = null;
-
-  function setType(type) {
-    currentType = type;
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('.type-btn.' + type).classList.add('active');
-    document.getElementById('dueDateLabel').textContent = type === 'paid' ? 'Payment Date' : 'Due Date';
-    document.getElementById('dueDate').placeholder = type === 'paid' ? 'e.g. 10 June 2026' : 'e.g. 20 June 2026';
-  }
-
-  function handleFile(input) {
-    if (input.files && input.files[0]) {
-      // Revoke old URL if any
+    function removeFile(e) {
+      e.stopPropagation();
+      attachedFile = null;
+      pdfBase64 = null;
       if (pdfObjectURL) { URL.revokeObjectURL(pdfObjectURL); pdfObjectURL = null; }
-      attachedFile = input.files[0];
-      pdfObjectURL = URL.createObjectURL(attachedFile);
-      document.getElementById('fileName').textContent = attachedFile.name;
-      document.getElementById('fileChip').style.display = 'inline-flex';
-      // Read as base64 for embedding in email HTML
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        pdfBase64 = e.target.result; // full data:application/pdf;base64,... string
-      };
-      reader.readAsDataURL(attachedFile);
+      document.getElementById('pdfFile').value = '';
+      document.getElementById('fileChip').style.display = 'none';
     }
-  }
 
-  function removeFile(e) {
-    e.stopPropagation();
-    attachedFile = null;
-    pdfBase64 = null;
-    if (pdfObjectURL) { URL.revokeObjectURL(pdfObjectURL); pdfObjectURL = null; }
-    document.getElementById('pdfFile').value = '';
-    document.getElementById('fileChip').style.display = 'none';
-  }
+    // drag & drop
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('dragover');
+      const dt = e.dataTransfer;
+      if (dt.files[0] && dt.files[0].type === 'application/pdf') {
+        document.getElementById('pdfFile').files = dt.files;
+        handleFile(document.getElementById('pdfFile'));
+      }
+    });
 
-  // drag & drop
-  const zone = document.getElementById('uploadZone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.classList.remove('dragover');
-    const dt = e.dataTransfer;
-    if (dt.files[0] && dt.files[0].type === 'application/pdf') {
-      document.getElementById('pdfFile').files = dt.files;
-      handleFile(document.getElementById('pdfFile'));
+    function switchTab(tab, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(tab + 'Tab').classList.add('active');
     }
-  });
 
-  function switchTab(tab, el) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(tab + 'Tab').classList.add('active');
-  }
+    function copyCode() {
+      const code = document.getElementById('codeOutput').textContent;
+      const btn = document.querySelector('.copy-btn');
 
-  function copyCode() {
-    const code = document.getElementById('codeOutput').textContent;
-    const btn = document.querySelector('.copy-btn');
+      // Try modern clipboard API first, fall back to execCommand for local files
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = '✓ Copied!';
+          setTimeout(() => btn.textContent = 'Copy Code', 2000);
+        }).catch(() => fallbackCopy(code, btn));
+      } else {
+        fallbackCopy(code, btn);
+      }
+    }
 
-    // Try modern clipboard API first, fall back to execCommand for local files
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(code).then(() => {
+    function fallbackCopy(text, btn) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
         btn.textContent = '✓ Copied!';
         setTimeout(() => btn.textContent = 'Copy Code', 2000);
-      }).catch(() => fallbackCopy(code, btn));
-    } else {
-      fallbackCopy(code, btn);
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+        setTimeout(() => btn.textContent = 'Copy Code', 2000);
+      }
+      document.body.removeChild(ta);
     }
-  }
 
-  function fallbackCopy(text, btn) {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try {
-      document.execCommand('copy');
-      btn.textContent = '✓ Copied!';
-      setTimeout(() => btn.textContent = 'Copy Code', 2000);
-    } catch(e) {
-      btn.textContent = '✗ Failed';
-      setTimeout(() => btn.textContent = 'Copy Code', 2000);
-    }
-    document.body.removeChild(ta);
-  }
+    async function generateTemplate() {
+      const clientName = document.getElementById('clientName').value.trim() || 'Valued Client';
+      const clientEmail = document.getElementById('clientEmail').value.trim();
+      const clientCompany = document.getElementById('clientCompany').value.trim();
+      const invoiceNum = document.getElementById('invoiceNum').value.trim() || 'RX-XXXX';
+      const invoiceAmt = document.getElementById('invoiceAmount').value.trim() || '0';
+      const dueDate = document.getElementById('dueDate').value.trim();
+      const projectName = document.getElementById('projectName').value.trim() || 'our engagement';
+      const senderName = document.getElementById('senderName').value.trim() || 'Rahul';
+      const extraNote = document.getElementById('additionalNote').value.trim();
+      const fileName = attachedFile ? attachedFile.name : null;
 
-  async function generateTemplate() {
-    const clientName    = document.getElementById('clientName').value.trim() || 'Valued Client';
-    const clientCompany = document.getElementById('clientCompany').value.trim();
-    const invoiceNum    = document.getElementById('invoiceNum').value.trim() || 'RX-XXXX';
-    const invoiceAmt    = document.getElementById('invoiceAmount').value.trim() || '0';
-    const dueDate       = document.getElementById('dueDate').value.trim();
-    const projectName   = document.getElementById('projectName').value.trim() || 'our engagement';
-    const senderName    = document.getElementById('senderName').value.trim() || 'Rahul';
-    const extraNote     = document.getElementById('additionalNote').value.trim();
-    const fileName      = attachedFile ? attachedFile.name : null;
+      const isDue = currentType === 'due';
+      const statusLabel = isDue ? 'PAYMENT DUE' : 'PAYMENT RECEIVED';
+      const statusBandColor = isDue ? '#c62828' : '#2e7d32';
 
-    const isDue = currentType === 'due';
-    const accentColor = isDue ? '#EF4444' : '#22C55E';
-    const badgeBg     = isDue ? '#FEF2F2' : '#F0FDF4';
-    const badgeText   = isDue ? '#B91C1C' : '#166534';
-    const statusLabel = isDue ? 'PAYMENT DUE' : 'PAYMENT RECEIVED';
-    const headerBg    = '#0A0A0A';
+      // Subject line helper
+      const subjectLine = isDue
+        ? `Invoice ${invoiceNum} — Payment Due | Raskbind X`
+        : `Invoice ${invoiceNum} — Payment Confirmed | Raskbind X`;
 
-    // Subject line helper
-    const subjectLine = isDue
-      ? `Invoice ${invoiceNum} — Payment Due | Raskbind X`
-      : `Invoice ${invoiceNum} — Payment Confirmed | Raskbind X`;
+      // Greeting split: label line vs large display name
+      const greetingName = `Dear ${clientName}${clientCompany ? ', ' + clientCompany : ''}`;
 
-    // Body text
-    const greeting = `Dear ${clientName}${clientCompany ? ' (' + clientCompany + ')' : ''},`;
+      const bodyPara = isDue
+        ? `I hope this message finds you well. Please find attached the invoice for <strong>${projectName}</strong>. Kindly review the details and arrange payment at your earliest convenience.`
+        : `Thank you for your prompt payment. We're pleased to confirm that we have successfully received your payment for <strong>${projectName}</strong>. Please find the payment confirmation invoice attached for your records.`;
 
-    const bodyPara = isDue
-      ? `I hope this message finds you well. Please find attached the invoice for <strong>${projectName}</strong>. 
-         Kindly review the details and arrange payment at your earliest convenience.`
-      : `Thank you for your prompt payment. We're pleased to confirm that we have successfully received your payment for <strong>${projectName}</strong>. 
-         Please find the payment confirmation invoice attached for your records.`;
-
-    const dateRow = isDue
-      ? `<tr>
-           <td style="padding:8px 0;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Payment Due By</td>
-           <td style="padding:8px 0;color:#EF4444;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid #f0f0f0;">${dueDate || '—'}</td>
+      const dateRow = isDue
+        ? `<tr>
+           <td style="padding:10px 0;border-bottom:1px solid #ffdcc8;font-size:10px;color:#a07040;text-transform:uppercase;letter-spacing:3px;width:160px;">Payment Due By</td>
+           <td style="padding:10px 0;border-bottom:1px solid #ffdcc8;font-size:14px;color:#c0392b;font-weight:700;">${dueDate || '—'}</td>
          </tr>`
-      : `<tr>
-           <td style="padding:8px 0;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Payment Received On</td>
-           <td style="padding:8px 0;color:#22C55E;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid #f0f0f0;">${dueDate || '—'}</td>
+        : `<tr>
+           <td style="padding:10px 0;border-bottom:1px solid #ffdcc8;font-size:10px;color:#a07040;text-transform:uppercase;letter-spacing:3px;width:160px;">Payment Received On</td>
+           <td style="padding:10px 0;border-bottom:1px solid #ffdcc8;font-size:14px;color:#2e7d32;font-weight:700;">${dueDate || '—'}</td>
          </tr>`;
 
-    const ctaSection = isDue
-      ? `<tr><td style="padding:28px 0 0;">
-           <p style="font-size:12.5px;color:#555;line-height:1.6;margin:0 0 16px;">
-             For any questions regarding this invoice, feel free to reach out to us directly.
-           </p>
-           <a href="mailto:hello@raskbind.com" 
-              style="display:inline-block;background:#FF6B00;color:#fff;text-decoration:none;
-                     padding:12px 28px;border-radius:6px;font-size:13px;font-weight:700;
-                     font-family:'Helvetica Neue',sans-serif;letter-spacing:.3px;">
-             Contact Us
-           </a>
+      const ctaSection = isDue
+        ? `<tr><td style="padding:24px 0 0;">
+           <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f2;border:1px solid #ffdcc8;border-radius:6px;">
+             <tr>
+               <td style="padding:14px 20px;vertical-align:middle;">
+                 <p style="margin:0;font-size:12px;color:#5a3200;font-weight:600;letter-spacing:.2px;">Questions about this invoice?</p>
+                 <p style="margin:3px 0 0;font-size:11px;color:#a07040;line-height:1.5;">Reach out and we'll get back to you promptly.</p>
+               </td>
+               <td style="padding:14px 20px 14px 0;vertical-align:middle;white-space:nowrap;width:1%;">
+                 <a href="mailto:raskbindx@gmail.com"
+                    style="display:inline-block;background:linear-gradient(135deg,#bf360c,#e65100);color:#ffffff;text-decoration:none;
+                           padding:11px 22px;border-radius:4px;font-size:10px;font-weight:700;
+                           font-family:'Helvetica Neue',Arial,sans-serif;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;">
+                   Contact Us
+                 </a>
+               </td>
+             </tr>
+           </table>
          </td></tr>`
-      : `<tr><td style="padding:28px 0 0;">
-           <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:16px 20px;">
-             <p style="margin:0;font-size:13px;color:#166534;font-weight:600;">✅ &nbsp;Payment Successfully Processed</p>
-             <p style="margin:6px 0 0;font-size:12px;color:#4B7A5C;line-height:1.5;">
-               Your account is up to date. We truly appreciate your trust in Raskbind X. 
-               Looking forward to continued collaboration!
-             </p>
-           </div>
+        : `<tr><td style="padding:24px 0 0;">
+           <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fff4;border:1px solid #a7f3c0;border-radius:6px;">
+             <tr>
+               <td style="padding:14px 18px;vertical-align:middle;width:28px;font-size:18px;line-height:1;">✅</td>
+               <td style="padding:14px 18px 14px 0;vertical-align:middle;">
+                 <p style="margin:0;font-size:12px;color:#14532d;font-weight:700;letter-spacing:.3px;">Payment Successfully Processed</p>
+                 <p style="margin:4px 0 0;font-size:12px;color:#166534;line-height:1.6;">Thank you for your trust in Raskbind X. Looking forward to continued collaboration.</p>
+               </td>
+             </tr>
+           </table>
          </td></tr>`;
 
-    // Wait for base64 if file just picked (race condition guard)
-    if (attachedFile && !pdfBase64) {
-      await new Promise(res => {
-        const check = setInterval(() => { if (pdfBase64) { clearInterval(check); res(); } }, 80);
-        setTimeout(() => { clearInterval(check); res(); }, 4000);
-      });
-    }
+      // Wait for base64 if file just picked (race condition guard)
+      if (attachedFile && !pdfBase64) {
+        await new Promise(res => {
+          const check = setInterval(() => { if (pdfBase64) { clearInterval(check); res(); } }, 80);
+          setTimeout(() => { clearInterval(check); res(); }, 4000);
+        });
+      }
 
-    // Shared inner table HTML for attachment block (href swapped per use)
-    const attachmentInnerFn = (href, target) => `
+      const attachmentInnerFn = (href, target) => `
       <table cellpadding="0" cellspacing="0" border="0" width="100%"
-             style="background:#FFF7F0;border:1px solid #FFD4B2;border-radius:8px;cursor:pointer;">
+             style="background:#fff8f2;border:1px solid #ffdcc8;border-radius:8px;cursor:pointer;">
         <tr>
           <td style="padding:0;">
             <a href="${href}" target="${target}" style="text-decoration:none;display:block;padding:14px 16px;">
@@ -582,14 +760,14 @@
                 <tr>
                   <td style="padding-right:12px;vertical-align:middle;font-size:20px;line-height:1;width:28px;">📎</td>
                   <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:10px;font-weight:700;color:#999;letter-spacing:.8px;text-transform:uppercase;">Attached Invoice</p>
-                    <p style="margin:4px 0 0;font-size:13px;color:#B84500;font-weight:600;">${fileName}</p>
-                    <p style="margin:3px 0 0;font-size:11px;color:#CC7A40;">Click to open PDF ↗</p>
+                    <p style="margin:0;font-size:10px;font-weight:700;color:#a07040;letter-spacing:.8px;text-transform:uppercase;">Attached Invoice</p>
+                    <p style="margin:4px 0 0;font-size:13px;color:#bf360c;font-weight:600;">${fileName}</p>
+                    <p style="margin:3px 0 0;font-size:11px;color:#e65100;">Click to open PDF ↗</p>
                   </td>
                   <td align="right" valign="middle" style="padding-left:16px;">
-                    <span style="display:inline-block;background:#FF6B00;color:#fff;
-                                 font-size:11px;font-weight:700;padding:6px 14px;
-                                 border-radius:5px;letter-spacing:.5px;white-space:nowrap;">
+                    <span style="display:inline-block;background:linear-gradient(135deg,#bf360c,#e65100);color:#fff;
+                                 font-size:10px;font-weight:700;padding:7px 16px;
+                                 border-radius:4px;letter-spacing:1.5px;white-space:nowrap;text-transform:uppercase;">
                       Open PDF
                     </span>
                   </td>
@@ -600,235 +778,193 @@
         </tr>
       </table>`;
 
-    // Preview version — uses local objectURL (opens PDF in browser tab)
-    const attachmentNotePreview = fileName && pdfObjectURL
-      ? `<tr><td style="padding-top:20px;">${attachmentInnerFn(pdfObjectURL, '_blank')}</td></tr>`
-      : fileName
-        ? `<tr><td style="padding-top:20px;">${attachmentInnerFn('#', '_self')}</td></tr>`
+      // Preview version — uses local objectURL (opens PDF in browser tab)
+      const attachmentNotePreview = fileName && pdfObjectURL
+        ? `<tr><td style="padding-top:20px;">${attachmentInnerFn(pdfObjectURL, '_blank')}</td></tr>`
+        : fileName
+          ? `<tr><td style="padding-top:20px;">${attachmentInnerFn('#', '_self')}</td></tr>`
+          : '';
+
+      // Email HTML version — uses base64 data URI so recipient can open it
+      const attachmentNoteEmail = fileName && pdfBase64
+        ? `<tr><td style="padding-top:20px;">${attachmentInnerFn(pdfBase64, '_blank')}</td></tr>`
+        : attachmentNotePreview;
+
+      const extraNoteRow = extraNote
+        ? `<tr><td style="padding:16px 0 0;">
+             <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f2;border:1px solid #ffdcc8;border-left:4px solid #e65100;border-radius:0 6px 6px 0;">
+               <tr>
+                 <td style="padding:16px 20px;">
+                   <p style="margin:0 0 6px;font-size:9px;font-weight:700;color:#e65100;text-transform:uppercase;letter-spacing:4px;">Additional Note</p>
+                   <p style="margin:0;font-size:13px;color:#5a3200;line-height:1.7;">${extraNote}</p>
+                 </td>
+               </tr>
+             </table>
+           </td></tr>`
         : '';
 
-    // Email HTML version — uses base64 data URI so recipient can open it
-    const attachmentNoteEmail = fileName && pdfBase64
-      ? `<tr><td style="padding-top:20px;">${attachmentInnerFn(pdfBase64, '_blank')}</td></tr>`
-      : attachmentNotePreview;
-
-    const extraNoteHtml = extraNote
-      ? `<tr><td style="padding-top:20px;">
-           <div style="border-left:3px solid #FF6B00;padding:10px 16px;background:#FFF9F5;border-radius:0 6px 6px 0;">
-             <p style="margin:0;font-size:13px;color:#333;line-height:1.6;">${extraNote}</p>
-           </div>
-         </td></tr>`
-      : '';
-
-    const emailHTML = `<!DOCTYPE html>
+      const emailHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${subjectLine}</title>
+<style>
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes growBar {
+    from { width: 0; }
+    to   { width: 40px; }
+  }
+  .card       { animation: fadeSlideUp 0.6s ease both; }
+  .card-delay { animation: fadeSlideUp 0.6s ease 0.2s both; }
+  .amount-shimmer {
+    background: linear-gradient(90deg, #bf360c, #FF6B00, #bf360c);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif;">
-<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f4f4f4;padding:40px 0;">
-<tr><td align="center">
-  <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+<body style="margin:0; padding:0; background-color:#fff5ee; font-family:'Segoe UI', Arial, sans-serif;">
 
-    <!-- Header -->
-    <tr>
-      <td style="background:${headerBg};border-radius:12px 12px 0 0;padding:28px 36px;text-align:left;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fff5ee; padding:48px 20px;">
+  <tr><td align="center">
+
+    <p style="margin:0 0 20px; font-size:10px; color:#8f6a3a; letter-spacing:5px; text-transform:uppercase;">Raskbind X &nbsp;&middot;&nbsp; Private Correspondence</p>
+
+    <table class="card" width="580" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 4px 32px rgba(191,54,12,0.10);">
+
+      <!-- ─── HEADER ─────────────────────────────────────────────── -->
+      <tr><td style="background:linear-gradient(135deg, #3d1a00 0%, #e65100 60%, #FF6B00 100%); padding:36px 48px 28px;">
+        <p style="margin:0; font-size:22px; font-weight:900; color:#ffffff; letter-spacing:3px; text-transform:uppercase;">RASKBIND X</p>
+        <p style="margin:6px 0 0; font-size:10px; color:#ffcc80; letter-spacing:5px; text-transform:uppercase;">Precision Tech &nbsp;&#183;&nbsp; Clean Systems &nbsp;&#183;&nbsp; Scalable Execution</p>
+      </td></tr>
+
+      <!-- ─── STATUS BAND ─────────────────────────────────────────── -->
+      <tr><td style="background:${statusBandColor}; padding:11px 48px;">
+        <p style="margin:0; font-size:10px; color:#ffffff; letter-spacing:5px; text-transform:uppercase; font-weight:700;">${statusLabel}</p>
+      </td></tr>
+
+      <!-- ─── BODY ────────────────────────────────────────────────── -->
+      <tr><td style="padding:44px 48px 40px;">
+
+        <p style="margin:0 0 2px; font-size:10px; color:#e65100; letter-spacing:5px; text-transform:uppercase;">Hello,</p>
+        <p style="margin:0 0 24px; font-size:28px; font-weight:400; color:#3d1a00; line-height:1.2; font-family:Georgia,'Times New Roman',serif;">${greetingName},</p>
+
+        <p style="margin:0 0 28px; font-size:14px; color:#5a3200; line-height:1.9;">${bodyPara}</p>
+
+        <div style="width:40px; height:3px; background:linear-gradient(90deg,#e65100,#FF6B00); border-radius:2px; margin-bottom:32px;"></div>
+
+        <!-- INVOICE DETAILS CARD -->
+        <table class="card-delay" width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f4; border-radius:6px; border-left:4px solid #e65100; overflow:hidden; margin-bottom:32px;">
+          <tr><td style="padding:24px 28px;">
+            <p style="margin:0 0 18px; font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:5px;">Invoice Details</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+
+              <tr>
+                <td style="padding:10px 0; border-bottom:1px solid #ffdcc8; font-size:10px; color:#a07040; text-transform:uppercase; letter-spacing:3px; width:160px;">Invoice Number</td>
+                <td style="padding:10px 0; border-bottom:1px solid #ffdcc8; font-size:13px; color:#7a4a00; font-family:'Courier New', monospace; font-weight:600;">${invoiceNum}</td>
+              </tr>
+
+              <tr>
+                <td style="padding:10px 0; border-bottom:1px solid #ffdcc8; font-size:10px; color:#a07040; text-transform:uppercase; letter-spacing:3px;">Project / Service</td>
+                <td style="padding:10px 0; border-bottom:1px solid #ffdcc8; font-size:14px; color:#3d1a00; font-weight:700;">${projectName}</td>
+              </tr>
+
+              ${dateRow}
+
+              <tr>
+                <td style="padding:12px 0; font-size:10px; color:#a07040; text-transform:uppercase; letter-spacing:3px;">Total Amount</td>
+                <td style="padding:12px 0;">
+                  <span class="amount-shimmer" style="font-size:26px; font-weight:900; color:#e65100;">&#8377;${invoiceAmt}</span>
+                </td>
+              </tr>
+
+            </table>
+          </td></tr>
+        </table>
+
+        <!-- NOTE BOX -->
+        ${extraNoteRow}
+
+        <!-- ATTACHMENT NOTE -->
+        ${attachmentNoteEmail}
+
+        <!-- CTA BUTTONS — primary button style:
+             background:linear-gradient(135deg,#bf360c,#e65100); color:#ffffff; padding:14px 28px;
+             font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; border-radius:4px;
+             Secondary button style:
+             background:#ffffff; color:#bf360c; border:2px solid #e65100; padding:12px 28px;
+             font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; border-radius:4px; -->
+        ${ctaSection}
+
+      </td></tr>
+
+      <!-- ─── FOOTER ───────────────────────────────────────────────── -->
+      <tr><td style="padding:24px 48px 28px; border-top:1px solid #f0e0d8; background:#fffaf8;">
+        <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td>
-              <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:22px;font-weight:800;
-                           color:#ffffff;letter-spacing:-0.3px;">
-                Raskbind&nbsp;<span style="color:#FF6B00;">X</span>
-              </span>
-              <p style="margin:4px 0 0;font-size:11px;color:#666;letter-spacing:.5px;text-transform:uppercase;">
-                Precision Tech Consultancy
+            <td style="vertical-align:top;">
+              <p style="margin:0; font-size:14px; color:#3d1a00; font-weight:800; letter-spacing:1px;">Rahul Sharma</p>
+              <p style="margin:3px 0 10px; font-size:9px; color:#e65100; letter-spacing:4px; text-transform:uppercase;">CEO &nbsp;&#183;&nbsp; Raskbind X</p>
+              <p style="margin:0; font-size:11px; color:#a07040; line-height:2;">
+                <a href="https://www.raskbind.com" style="color:#bf360c; text-decoration:none; font-weight:700;">raskbind.com</a><br>
+                raskbindx@gmail.com<br>
+                Jaipur, Rajasthan, India
               </p>
             </td>
-            <td align="right" valign="middle">
-              <span style="background:${badgeBg};color:${badgeText};
-                           font-size:10px;font-weight:800;letter-spacing:1.2px;
-                           text-transform:uppercase;padding:5px 12px;
-                           border-radius:20px;display:inline-block;">
-                ${statusLabel}
-              </span>
+            <td align="right" valign="middle" width="120">
+              <div style="font-family:Georgia,serif;font-size:22px;font-weight:900;color:#e65100;letter-spacing:2px;">RX</div>
+              <p style="margin:4px 0 0; font-size:9px; color:#ccb090; text-align:right; letter-spacing:1px; line-height:1.6;">Official correspondence<br>from Raskbind X</p>
             </td>
           </tr>
         </table>
-      </td>
-    </tr>
+      </td></tr>
 
-    <!-- Orange accent line -->
-    <tr>
-      <td style="background:#FF6B00;height:3px;font-size:0;line-height:0;">&nbsp;</td>
-    </tr>
+    </table>
 
-    <!-- Body -->
-    <tr>
-      <td style="background:#ffffff;padding:36px 36px 0;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <p style="margin:20px 0 0; font-size:10px; color:#a07040; letter-spacing:3px; text-transform:uppercase; opacity:0.7;">&copy; 2026 Raskbind X &nbsp;&#183;&nbsp; All Rights Reserved</p>
 
-          <!-- Greeting -->
-          <tr>
-            <td style="padding-bottom:20px;">
-              <p style="margin:0;font-size:15px;color:#111;line-height:1.6;">${greeting}</p>
-            </td>
-          </tr>
-
-          <!-- Message -->
-          <tr>
-            <td style="padding-bottom:24px;">
-              <p style="margin:0;font-size:14px;color:#444;line-height:1.8;">${bodyPara}</p>
-            </td>
-          </tr>
-
-          <!-- Invoice Details Box -->
-          <tr>
-            <td>
-              <div style="background:#FAFAFA;border:1px solid #E5E5E5;border-radius:10px;padding:20px 24px;">
-                <p style="margin:0 0 14px;font-size:11px;font-weight:700;color:#999;
-                           letter-spacing:1px;text-transform:uppercase;">Invoice Details</p>
-                <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                  <tr>
-                    <td style="padding:8px 0;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Invoice Number</td>
-                    <td style="padding:8px 0;color:#111;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid #f0f0f0;">${invoiceNum}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;color:#888;font-size:13px;border-bottom:1px solid #f0f0f0;">Project / Service</td>
-                    <td style="padding:8px 0;color:#111;font-size:13px;font-weight:600;text-align:right;border-bottom:1px solid #f0f0f0;">${projectName}</td>
-                  </tr>
-                  ${dateRow}
-                  <tr>
-                    <td style="padding:12px 0 0;color:#111;font-size:14px;font-weight:700;">Total Amount</td>
-                    <td style="padding:12px 0 0;font-size:18px;font-weight:800;color:#FF6B00;text-align:right;">₹${invoiceAmt}</td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-
-          ${attachmentNoteEmail}
-          ${extraNoteHtml}
-          ${ctaSection}
-
-          <!-- Sign off -->
-          <tr>
-            <td style="padding:32px 0 36px;">
-              <p style="margin:0;font-size:14px;color:#444;line-height:1.7;">
-                Warm regards,<br/>
-                <strong style="color:#111;">${senderName}</strong><br/>
-                <span style="color:#888;font-size:12px;">Raskbind X &nbsp;·&nbsp; raskbind.com</span>
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-
-    <!-- White bottom padding to close body section -->
-    <tr>
-      <td style="background:#ffffff;padding:28px 36px 0;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr>
-            <td style="border-top:1px solid #EEEEEE;padding-top:24px;">
-              <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:12px;color:#BBBBBB;line-height:1.6;">
-                      Need help? &nbsp;<a href="mailto:hello@raskbind.com" style="color:#FF6B00;text-decoration:none;font-weight:600;">hello@raskbind.com</a>
-                    </p>
-                  </td>
-                  <td align="right" valign="middle">
-                    <p style="margin:0;font-size:11px;color:#CCCCCC;">
-                      <a href="https://raskbind.com" style="color:#FF6B00;text-decoration:none;font-weight:700;letter-spacing:.3px;">raskbind.com</a>
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-
-    <!-- Footer -->
-    <tr>
-      <td style="background:#0A0A0A;padding:28px 36px 32px;border-radius:0 0 14px 14px;margin-top:0;">
-        <table cellpadding="0" cellspacing="0" border="0" width="100%">
-
-          <!-- Top row: brand + tagline -->
-          <tr>
-            <td style="padding-bottom:16px;border-bottom:1px solid #1E1E1E;">
-              <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td valign="middle">
-                    <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;
-                                 font-weight:800;color:#ffffff;letter-spacing:-0.3px;">
-                      Raskbind&nbsp;<span style="color:#FF6B00;">X</span>
-                    </span>
-                  </td>
-                  <td align="right" valign="middle">
-                    <span style="font-size:10px;color:#444;letter-spacing:1.2px;text-transform:uppercase;">
-                      Precision Tech Consultancy
-                    </span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Bottom row: address + legal -->
-          <tr>
-            <td style="padding-top:16px;">
-              <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td valign="top" style="padding-right:20px;">
-                    <p style="margin:0;font-size:11px;color:#484848;line-height:2;">
-                      Jaipur, Rajasthan, India<br/>
-                      <a href="https://raskbind.com" style="color:#FF6B00;text-decoration:none;font-weight:600;">raskbind.com</a>
-                    </p>
-                  </td>
-                  <td align="right" valign="top">
-                    <p style="margin:0;font-size:10px;color:#333;line-height:1.8;text-align:right;">
-                      This email was sent on behalf<br/>of a Raskbind X client engagement.<br/>
-                      <span style="color:#2A2A2A;">© 2026 Raskbind X</span>
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-
-  </table>
-</td></tr>
+  </td></tr>
 </table>
 </body>
-</html>`;
+</html>
+`;
 
-    // Build a preview version with objectURL for clickable PDF (only differs in attachment block)
-    const previewHTML = pdfObjectURL
-      ? emailHTML.replace(attachmentNoteEmail, attachmentNotePreview)
-      : emailHTML;
+      // Build a preview version with objectURL for clickable PDF (only differs in attachment block)
+      const previewHTML = pdfObjectURL
+        ? emailHTML.replace(attachmentNoteEmail, attachmentNotePreview)
+        : emailHTML;
 
-    // Show subject line
-    const subjectDiv = `<div style="background:#1C1C1C;border:1px solid #2A2A2A;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#888;">
+      // Show subject line
+      const subjectDiv = `<div style="background:#1C1C1C;border:1px solid #2A2A2A;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#888;">
       <span style="color:#FF6B00;font-weight:600;">Subject:</span>&nbsp; ${subjectLine}
     </div>`;
 
-    const stripShell = html => html.replace(/<html[^>]*>|<\/html>|<head>[\s\S]*?<\/head>|<body[^>]*>|<\/body>/gi, '');
-    document.getElementById('emailPreview').innerHTML = subjectDiv + stripShell(previewHTML);
-    document.getElementById('codeOutput').textContent = emailHTML;
-    document.getElementById('outputCard').classList.add('visible');
+      const stripShell = html => {
+        // Extract <style> from <head> to keep animations working in preview
+        const styleMatch = html.match(/<head>[\s\S]*?(<style[\s\S]*?<\/style>)[\s\S]*?<\/head>/i);
+        const inlineStyle = styleMatch ? styleMatch[1] : '';
+        const bodyContent = html.replace(/<html[^>]*>|<\/html>|<head>[\s\S]*?<\/head>|<body[^>]*>|<\/body>/gi, '');
+        return inlineStyle + bodyContent;
+      };
+      document.getElementById('emailPreview').innerHTML = subjectDiv + stripShell(previewHTML);
+      document.getElementById('codeOutput').textContent = emailHTML;
+      document.getElementById('outputCard').classList.add('visible');
 
-    // Scroll to output
-    setTimeout(() => document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  }
-</script>
+      // Scroll to output
+      setTimeout(() => document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  </script>
 </body>
+
 </html>
