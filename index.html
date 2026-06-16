@@ -506,7 +506,8 @@
       </div>
       <div class="field">
         <label>Sender</label>
-        <div style="background:var(--surface);border:1px solid var(--orange-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+        <div
+          style="background:var(--surface);border:1px solid var(--orange-border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
           <span style="font-size:18px;">👤</span>
           <div>
             <div style="font-size:14px;font-weight:600;color:var(--text);">Rahul Sharma</div>
@@ -517,7 +518,8 @@
       </div>
       <div class="field full">
         <label>Additional Note</label>
-        <textarea id="additionalNote" placeholder="Default note auto-fills based on invoice type. Edit freely..."></textarea>
+        <textarea id="additionalNote"
+          placeholder="Default note auto-fills based on invoice type. Edit freely..."></textarea>
       </div>
     </div>
 
@@ -573,7 +575,7 @@
     let pdfBase64 = null;
 
     const defaultNotes = {
-      due:  'Please ensure payment is processed by the due date to avoid any delays in project continuity. Bank transfer and UPI are both accepted. Feel free to reach out if you need an alternative arrangement.',
+      due: 'Please ensure payment is processed by the due date to avoid any delays in project continuity. Bank transfer and UPI are both accepted. Feel free to reach out if you need an alternative arrangement.',
       paid: 'This invoice has been marked as fully settled. Please retain this confirmation for your financial records. It has been a pleasure working with you — we look forward to our next engagement.'
     };
 
@@ -961,8 +963,86 @@
       document.getElementById('codeOutput').textContent = emailHTML;
       document.getElementById('outputCard').classList.add('visible');
 
+      // ── Log to Google Sheets ──────────────────────────────────────
+      logToSheet({ isDue, invoiceNum, clientName, clientEmail, clientCompany, projectName, invoiceAmt, dueDate, extraNote, senderName });
+
       // Scroll to output
       setTimeout(() => document.getElementById('outputCard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    // ── Google Sheets Logger ──────────────────────────────────────────
+    async function logToSheet({ isDue, invoiceNum, clientName, clientEmail, clientCompany, projectName, invoiceAmt, dueDate, extraNote, senderName }) {
+      const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyvJzuDDb3boXzp4uk6sr6-vVCIz4evXUlXNVjD50izqk3DNymBKKHCQ3PiccpD-eMF/exec';
+
+      showToast('saving');
+
+      try {
+        await fetch(SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: isDue ? 'due' : 'paid',
+            invoiceNum,
+            clientName,
+            clientEmail,
+            clientCompany,
+            projectName,
+            amount: invoiceAmt,
+            date: dueDate,
+            note: extraNote,
+            sender: senderName
+          })
+        });
+        // no-cors means we can't read response, but if no error thrown it sent fine
+        showToast('saved', isDue ? 'Sheet 1 (Due)' : 'Sheet 2 (Paid)');
+      } catch (err) {
+        showToast('error');
+      }
+    }
+
+    // ── Toast Notification ────────────────────────────────────────────
+    function showToast(state, sheetName = '') {
+      let toast = document.getElementById('sheetToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'sheetToast';
+        toast.style.cssText = `
+          position:fixed;bottom:28px;right:28px;z-index:9999;
+          padding:14px 20px;border-radius:10px;font-size:13px;font-weight:600;
+          display:flex;align-items:center;gap:10px;
+          box-shadow:0 8px 32px rgba(0,0,0,0.25);
+          transition:all .3s ease;transform:translateY(80px);opacity:0;
+          font-family:'Inter',sans-serif;min-width:220px;
+        `;
+        document.body.appendChild(toast);
+      }
+
+      const configs = {
+        saving: { bg: '#1C1C1C', border: '#FF6B00', color: '#FF6B00', icon: '⏳', text: 'Saving to Google Sheet…' },
+        saved: { bg: '#0d2b1a', border: '#22c55e', color: '#22c55e', icon: '✅', text: `Saved to ${sheetName}` },
+        error: { bg: '#2b0d0d', border: '#ef4444', color: '#ef4444', icon: '❌', text: 'Sheet save failed. Check URL.' }
+      };
+
+      const c = configs[state];
+      toast.style.background = c.bg;
+      toast.style.border = `1px solid ${c.border}`;
+      toast.style.color = c.color;
+      toast.innerHTML = `<span style="font-size:16px">${c.icon}</span> ${c.text}`;
+
+      // Animate in
+      requestAnimationFrame(() => {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+      });
+
+      // Auto-hide after 3.5s (except saving state)
+      if (state !== 'saving') {
+        setTimeout(() => {
+          toast.style.transform = 'translateY(80px)';
+          toast.style.opacity = '0';
+        }, 3500);
+      }
     }
   </script>
 </body>
